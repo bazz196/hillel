@@ -83,7 +83,7 @@ output "instance_pub_ip" {
 }
 output "instance_pub_dns" {
   value = aws_instance.this.public_dns
-//}
+}
 //output "aws_eip" {
 //  value = aws_eip.this[count.eip_attach].customer_owned_ip
 //}
