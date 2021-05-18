@@ -10,7 +10,7 @@ resource "aws_instance" "this" {
   ami                    = var.ami_id
   instance_type          = var.default_instance_type                // HOMEWORK: change to a variable (type — string)
   vpc_security_group_ids = [aws_security_group.this.id]
-  key_name               = var.key
+  key_name               = aws_key_pair.robot.key_name
 
   //  HOMEWORK hint - key_name = ""
 
