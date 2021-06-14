@@ -18,7 +18,7 @@ variable "key" {
 }
 variable "public_key" {
   type =string
-  default = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDBA5bOtGszwUKhwag6LJ2isPQYlsLQWy/ELy/bgSwZQJ5qg9kfzaqe/+fMmljAeCTy86iynRdNBogZkPOtzOieLPA8WKWSirqo/eZkivY4yvk6ULG5yws/JvczHXNTP885ywon2npIomVP3g+dI+WMb9LpcIALUQI7uEjYKV/vKqywNhlsKFME6B+skQTJhJtcQukYypUhpc/WT2qLigxQmyPGyTNAfVwYO7mHsHa5wtbXkrqXhJ4mmiD7CYp5ThO6YS7+XYgALZpbCPuK5iy0diNea6ptsq5WVBeQoxlY9ZGna2gzhPevBfDuMQ4LJb///CENtAVkqN5B5A8Gjk1H ilia@ilia-k"
+  default = "ssh-rsa 7uEjYKV/+/+///CENtAVkqN5B5A8Gjk1H "
 }
 
 
