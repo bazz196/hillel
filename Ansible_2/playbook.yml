@@ -13,13 +13,21 @@
 
 - hosts: app
   become: true
+  gather_facts: false
   vars_files:
     - vars/default.yml
   #Apache Configuration
   tasks:
   - name: Install LAMP Packages
     apt: name={{ item }} update_cache=yes state=latest
-    loop: [ 'apache2', 'php', 'libapache2-mod-php', 'php-mysqli']
+    loop: [ 'apache2', 'php', 'libapache2-mod-php', 'php-mysql']
+    tags: apache-php-configuration
+
+  - name: Install PHP extensions
+    apt:
+      name: [ 'php-curl', 'php-gd', 'php-mbstring', 'php-xml', 'php-xmlrpc', 'php-soap', 'php-intl', 'php-zip' ]
+      state: latest
+      update_cache: true
     tags: apache-php-configuration
 
   - name: Create document root
@@ -32,7 +40,7 @@
 
   - name: Set up Apache virtualhost
     template:
-      src: "files/apache.conf.j2"
+      src: "templates/apache.conf.j2"
       dest: "/etc/apache2/sites-available/{{ http_conf }}"
     notify: Reload Apache
     tags: apache-php-configuration
@@ -63,12 +71,11 @@
       dest: "/var/www/{{ http_host }}/"
       force: yes
     tags: apache-php-configuration
-    notify: Reload Apache
 
   # Update DB configuration file for the site
   - name: Deploy DB configuration file
     template:
-      src: "files/db.php.j2"
+      src: "templates/db.php.j2"
       dest: "/var/www/{{ http_host }}/db.php"
     tags: apache-php-configuration
     notify: Reload Apache
@@ -89,42 +96,46 @@
 - hosts: db
   become: true
   remote_user: vagrant
+  gather_facts: false
   vars_files:
     - vars/default.yml
   tasks:
   #MySQL Configuration
   - name: Install LAMP Packages
     apt: name={{ item }} update_cache=yes state=latest
-    loop: ['mysql-server', 'python3-pymysql','php-mysql', 'python3-mysqldb']
+    loop: [ 'mysql-server', 'python3-pymysql']
     tags: mysql-configuration
 
 
-#  - name: Sets the root password
-#    mysql_user:
-#        name: root
-#      password: "{{ mysql_root_password }}"
-#      login_unix_socket: /var/run/mysqld/mysqld.sock
-#    tags: mysql-configuration
-#
-  - name: Modify user root to allow all connections
+  - name: Sets the root password
     mysql_user:
-      name: root
-      host: ['localhost', 'ip_of_app_host']
+        name: root
+        password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+    tags: mysql-configuration
 
-  - name: Removes all anonymous user accounts
+  - name: Create new local my.cnf
+    template:
+      src: templates/client.my.cnf.j2
+      dest: ~/.my.cnf
+      mode: 0600
+
+  - name: Create database user with name 'hillel' and password with all database privileges
     mysql_user:
-      name: ''
-      host_all: yes
-      state: absent
+      name: "{{ mysql_db_user }}"
+      password: "{{ mysql_password }}"
+      priv: '*.*:ALL'
+      host: "0.0.0.0"
+      state: present
       login_user: root
       login_password: "{{ mysql_root_password }}"
-    tags: mysql-configuration
+
 
   - name: Removes the MySQL test database
     mysql_db:
       name: test
       state: absent
-      login_user: root
+      login_user: "{{ mysql_root_user }}"
       login_password: "{{ mysql_root_password }}"
     tags: mysql-configuration
 
@@ -132,15 +143,10 @@
     mysql_db:
       name: "{{ mysql_db_name }}"
       state: present
-      login_user: root
+      login_user: "{{ mysql_root_user }}"
       login_password: "{{ mysql_root_password }}"
     tags: mysql-configuration
 
-
-  - name: ensure mysql listening on all ports
-    lineinfile: dest=/etc/mysql/my.cnf regexp=^bind-address line="bind-address = {{ ansible_eth1.ipv4.address }}"
-    notify: restart mysql
-    tags: [ 'configure' ]
 
   handlers:
   - name: restart mysql

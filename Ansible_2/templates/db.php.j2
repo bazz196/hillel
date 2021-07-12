@@ -3,8 +3,8 @@ session_start();
 
 $conn = mysqli_connect(
   '{{ mysql_host }}',
-  'root',
-  '{{ mysql_root_password }}',
+  '{{ mysql_db_user }}',
+  '{{ mysql_password }}',
   '{{ mysql_db_name }}'
 ) or die(mysqli_erro($mysqli));
 
