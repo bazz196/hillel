@@ -12,3 +12,5 @@
 
 - name: deploy site
   include: delpoy_site.yml
+  tags:
+    - deply-site
